@@ -154,6 +154,21 @@
       margin-bottom: 0.2rem;
     }
 
+    .card-delete {
+      position: absolute;
+      top: 0.25rem;
+      right: 0.3rem;
+      font-size: 0.55rem;
+      color: var(--muted-fg);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.1s;
+      line-height: 1;
+    }
+
+    .card:hover .card-delete { opacity: 1; }
+    .card-delete:hover { color: hsl(0,72%,51%); }
+
     /* placed card on canvas */
     .card.placed {
       position: absolute;
@@ -529,8 +544,18 @@ function makeCard(card, inTray) {
   const el = document.createElement('div');
   el.className = 'card';
   el.dataset.id = card.id;
-  el.innerHTML = `<span class="card-num">#${card.id}</span>${card.text}`;
-  el.addEventListener('pointerdown', e => startDrag(e, card, inTray));
+  el.innerHTML = `<span class="card-num">#${card.id}</span>${card.text}<span class="card-delete" title="Remove">✕</span>`;
+  el.addEventListener('pointerdown', e => {
+    if (e.target.classList.contains('card-delete')) return;
+    startDrag(e, card, inTray);
+  });
+  el.querySelector('.card-delete').addEventListener('click', e => {
+    e.stopPropagation();
+    delete placed[card.id];
+    const idx = CARDS.findIndex(c => c.id === card.id);
+    if (idx !== -1) CARDS.splice(idx, 1);
+    render();
+  });
   return el;
 }
 
