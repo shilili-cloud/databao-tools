@@ -411,6 +411,10 @@
 <!-- TRAY -->
 <div class="tray" id="tray">
   <span class="tray-label" id="tray-label">To place</span>
+  <form id="add-form" style="display:flex;align-items:center;gap:0.4rem;margin-left:0.5rem;flex-shrink:0;">
+    <input id="add-input" type="text" placeholder="Add a custom card…" style="font-family:var(--font);font-size:0.75rem;padding:0.3rem 0.6rem;border:1px solid var(--border);border-radius:var(--radius);outline:none;width:220px;background:white;color:var(--fg);" />
+    <button type="submit" style="font-family:var(--font);font-size:0.75rem;padding:0.3rem 0.7rem;background:var(--primary);color:white;border:none;border-radius:var(--radius);cursor:pointer;">Add</button>
+  </form>
 </div>
 
 <!-- CANVAS -->
@@ -598,6 +602,19 @@ function isOverDropZone(cx, cy) {
   const r = dropZone.getBoundingClientRect();
   return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
 }
+
+// ── Add custom card ───────────────────────────────────────────────────────
+
+document.getElementById('add-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = document.getElementById('add-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const id = Date.now();
+  CARDS.push({ id, text });
+  input.value = '';
+  render();
+});
 
 // ── Reset ─────────────────────────────────────────────────────────────────
 
