@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Request Cost Calculator — Databao</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --background: hsl(0, 0%, 100%);
+      --foreground: hsl(0, 0%, 5%);
+      --primary: hsl(142, 71%, 45%);
+      --primary-foreground: hsl(0, 0%, 100%);
+      --secondary: hsl(0, 0%, 96%);
+      --muted: hsl(0, 0%, 94%);
+      --muted-foreground: hsl(0, 0%, 40%);
+      --border: hsl(0, 0%, 90%);
+      --radius: 0.5rem;
+      --font-sans: 'DM Sans', Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--background);
+      color: var(--foreground);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* NAV */
+    nav {
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--foreground);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-logo svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .nav-cta {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--primary);
+      text-decoration: none;
+      border: 1px solid var(--primary);
+      padding: 0.375rem 0.875rem;
+      border-radius: var(--radius);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-cta:hover {
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+
+    /* MAIN */
+    main {
+      flex: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem 6rem;
+      width: 100%;
+    }
+
+    /* HEADER */
+    .page-header {
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+    }
+
+    .page-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+    }
+
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 0.75rem;
+    }
+
+    .page-subtitle {
+      font-size: 1rem;
+      color: var(--muted-foreground);
+      line-height: 1.6;
+    }
+
+    /* INPUTS */
+    .inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .input-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .input-label-text {
+      font-size: 0.9375rem;
+      font-weight: 500;
+    }
+
+    .input-value {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 80px;
+      text-align: right;
+    }
+
+    .input-hint {
+      font-size: 0.8125rem;
+      color: var(--muted-foreground);
+      margin-top: -0.25rem;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--muted);
+      border-radius: 9999px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: var(--primary);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 0 0 1px var(--primary);
+      transition: box-shadow 0.15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 0 4px hsl(142, 71%, 45%, 0.15);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: var(--primary);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    /* RESULTS */
+    .results {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .results-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--secondary);
+    }
+
+    .results-header-text {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--muted-foreground);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .result-cell {
+      padding: 1.5rem 1.25rem;
+      border-right: 1px solid var(--border);
+    }
+
+    .result-cell:last-child {
+      border-right: none;
+    }
+
+    .result-label {
+      font-size: 0.8125rem;
+      color: var(--muted-foreground);
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .result-value {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--foreground);
+      line-height: 1.2;
+    }
+
+    .result-value.highlight {
+      color: var(--primary);
+    }
+
+    .result-value.warning {
+      color: hsl(0, 72%, 51%);
+    }
+
+    /* INSIGHT */
+    .insight {
+      background: var(--secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .insight-icon {
+      font-size: 1rem;
+      line-height: 1.5;
+      flex-shrink: 0;
+    }
+
+    .insight-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      color: var(--foreground);
+    }
+
+    .insight-text strong {
+      font-weight: 600;
+    }
+
+    /* DIVIDER */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2.5rem 0;
+    }
+
+    /* CTA */
+    .cta-block {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .cta-title {
+      font-size: 1.0625rem;
+      font-weight: 600;
+    }
+
+    .cta-body {
+      font-size: 0.9375rem;
+      color: var(--muted-foreground);
+      line-height: 1.6;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      font-family: var(--font-sans);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover { opacity: 0.88; }
+
+    .btn-secondary {
+      display: inline-block;
+      background: transparent;
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+
+    .btn-secondary:hover { background: var(--secondary); }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+
+    footer a {
+      font-size: 0.8125rem;
+      color: var(--muted-foreground);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    footer a:hover { color: var(--foreground); }
+
+    /* RESPONSIVE */
+    @media (max-width: 540px) {
+      .results-grid { grid-template-columns: 1fr; }
+      .result-cell { border-right: none; border-bottom: 1px solid var(--border); }
+      .result-cell:last-child { border-bottom: none; }
+      .page-title { font-size: 1.375rem; }
+      .result-value { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="https://databao.app" class="nav-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+      </svg>
+      Databao
+    </a>
+    <a href="https://databao.app" class="nav-cta">Request early access</a>
+  </nav>
+
+  <!-- MAIN -->
+  <main>
+
+    <div class="page-header">
+      <p class="page-eyebrow">Free Calculator</p>
+      <h1 class="page-title">How much is your Slack data backlog costing you?</h1>
+      <p class="page-subtitle">Move the sliders to see how much engineering time and budget your team is spending on ad-hoc data requests that business users should be able to self-serve.</p>
+    </div>
+
+    <!-- INPUTS -->
+    <div class="inputs">
+
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">Data team size</span>
+          <span class="input-value" id="val-team">5 engineers</span>
+        </div>
+        <input type="range" id="team" min="1" max="50" value="5" step="1" />
+        <p class="input-hint">Data and analytics engineers responsible for fulfilling requests</p>
+      </div>
+
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">Ad-hoc data requests per week</span>
+          <span class="input-value" id="val-requests">20 requests</span>
+        </div>
+        <input type="range" id="requests" min="1" max="200" value="20" step="1" />
+        <p class="input-hint">Slack messages, Jira tickets, emails asking for data pulls or dashboard updates</p>
+      </div>
+
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">Average hours per request</span>
+          <span class="input-value" id="val-hours">2 hrs</span>
+        </div>
+        <input type="range" id="hours" min="0.5" max="8" value="2" step="0.5" />
+        <p class="input-hint">Including understanding the request, writing SQL, validating, and responding</p>
+      </div>
+
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">Average data engineer salary</span>
+          <span class="input-value" id="val-salary">$150,000</span>
+        </div>
+        <input type="range" id="salary" min="60000" max="300000" value="150000" step="5000" />
+        <p class="input-hint">Annual fully-loaded cost including benefits</p>
+      </div>
+
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results">
+      <div class="results-header">
+        <span class="results-header-text">Your estimate</span>
+      </div>
+      <div class="results-grid">
+        <div class="result-cell">
+          <p class="result-label">Engineering hours lost per year</p>
+          <p class="result-value" id="out-hours">—</p>
+        </div>
+        <div class="result-cell">
+          <p class="result-label">Annual cost of ad-hoc requests</p>
+          <p class="result-value warning" id="out-cost">—</p>
+        </div>
+        <div class="result-cell">
+          <p class="result-label">% of team capacity consumed</p>
+          <p class="result-value" id="out-pct">—</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSIGHT -->
+    <div class="insight">
+      <span class="insight-icon">→</span>
+      <p class="insight-text" id="insight-text">Adjust the sliders above to see your estimate.</p>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- CTA -->
+    <div class="cta-block">
+      <p class="cta-title">Databao eliminates the backlog.</p>
+      <p class="cta-body">Databao connects to your dbt project and lets business users ask questions directly in Slack — with answers grounded in your approved metrics, not ad-hoc SQL. Your data team stays in control. The requests stop.</p>
+      <div class="cta-buttons">
+        <a href="https://databao.app" class="btn-primary">Request early access</a>
+        <a href="https://github.com/databao" class="btn-secondary">View on GitHub</a>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="https://databao.app">databao.app</a>
+    <a href="https://databao.app/docs">Docs</a>
+    <a href="https://github.com/databao">GitHub</a>
+    <a href="https://discord.gg/databao">Discord</a>
+  </footer>
+
+  <script>
+    const fmt = {
+      hours: v => v.toLocaleString() + ' hrs',
+      cost: v => '$' + v.toLocaleString(undefined, { maximumFractionDigits: 0 }),
+      pct: v => v.toFixed(0) + '%',
+      salary: v => '$' + Number(v).toLocaleString(),
+      team: v => v + ' engineer' + (v == 1 ? '' : 's'),
+      requests: v => v + ' request' + (v == 1 ? '' : 's'),
+      hoursSlider: v => v + ' hr' + (v == 1 ? '' : 's'),
+    };
+
+    function calculate() {
+      const team     = +document.getElementById('team').value;
+      const requests = +document.getElementById('requests').value;
+      const hours    = +document.getElementById('hours').value;
+      const salary   = +document.getElementById('salary').value;
+
+      document.getElementById('val-team').textContent     = fmt.team(team);
+      document.getElementById('val-requests').textContent = fmt.requests(requests);
+      document.getElementById('val-hours').textContent    = fmt.hoursSlider(hours);
+      document.getElementById('val-salary').textContent   = fmt.salary(salary);
+
+      const hoursPerWeek  = requests * hours;
+      const hoursPerYear  = hoursPerWeek * 52;
+      const hourlyRate    = salary / 2080;
+      const costPerYear   = hoursPerYear * hourlyRate;
+      const teamCapacity  = team * 40 * 52;
+      const pctConsumed   = (hoursPerYear / teamCapacity) * 100;
+
+      document.getElementById('out-hours').textContent = fmt.hours(Math.round(hoursPerYear));
+      document.getElementById('out-cost').textContent  = fmt.cost(Math.round(costPerYear));
+      document.getElementById('out-pct').textContent   = fmt.pct(Math.min(pctConsumed, 100));
+
+      const costK = Math.round(costPerYear / 1000);
+      const insight = document.getElementById('insight-text');
+
+      if (pctConsumed >= 50) {
+        insight.innerHTML = `Your team is spending <strong>${fmt.pct(Math.min(pctConsumed,100))}</strong> of its capacity on requests that business users should be able to answer themselves — the equivalent of <strong>${fmt.cost(Math.round(costPerYear))}</strong> a year in engineering time.`;
+      } else if (pctConsumed >= 20) {
+        insight.innerHTML = `At <strong>${fmt.pct(pctConsumed)}</strong> of team capacity, ad-hoc requests are a real drag on your roadmap. That's <strong>${fmt.cost(Math.round(costPerYear))}</strong> a year your team could be spending on work that actually moves the product forward.`;
+      } else {
+        insight.innerHTML = `Even at <strong>${fmt.pct(pctConsumed)}</strong> of capacity, that's <strong>${fmt.cost(Math.round(costPerYear))}</strong> a year spent on questions that could be self-served — and it compounds as your business user headcount grows.`;
+      }
+    }
+
+    ['team','requests','hours','salary'].forEach(id => {
+      document.getElementById(id).addEventListener('input', calculate);
+    });
+
+    calculate();
+  </script>
+
+</body>
+</html>

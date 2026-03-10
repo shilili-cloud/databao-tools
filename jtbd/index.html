@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What Does Marketing Actually Need? — Databao</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: hsl(0,0%,100%);
+      --fg: hsl(0,0%,5%);
+      --primary: hsl(142,71%,45%);
+      --primary-light: hsl(142,71%,95%);
+      --secondary: hsl(0,0%,97%);
+      --muted: hsl(0,0%,94%);
+      --muted-fg: hsl(0,0%,45%);
+      --border: hsl(0,0%,88%);
+      --radius: 6px;
+      --font: 'DM Sans', Arial, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      height: 48px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .nav-logo {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--fg);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .nav-logo svg { width: 16px; height: 16px; }
+
+    .nav-title {
+      font-size: 0.875rem;
+      color: var(--muted-fg);
+      padding-left: 1rem;
+      border-left: 1px solid var(--border);
+    }
+
+    .nav-title strong {
+      color: var(--fg);
+      font-weight: 600;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+
+    .nav-hint {
+      font-size: 0.75rem;
+      color: var(--muted-fg);
+    }
+
+    .btn-reset {
+      font-family: var(--font);
+      font-size: 0.8rem;
+      color: var(--muted-fg);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.7rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn-reset:hover { color: var(--fg); border-color: hsl(0,0%,65%); }
+
+    /* TRAY */
+    .tray {
+      border-bottom: 1px solid var(--border);
+      background: var(--secondary);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      overflow-x: auto;
+      min-height: 64px;
+    }
+
+    .tray-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--muted-fg);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-right: 0.25rem;
+    }
+
+    .tray-empty-msg {
+      font-size: 0.8rem;
+      color: var(--muted-fg);
+      font-style: italic;
+    }
+
+    /* CARDS */
+    .card {
+      flex-shrink: 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.4rem 0.6rem;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      cursor: grab;
+      max-width: 180px;
+      transition: box-shadow 0.12s, border-color 0.12s;
+      position: relative;
+    }
+
+    .card:hover {
+      border-color: hsl(0,0%,65%);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    .card-num {
+      font-family: var(--mono);
+      font-size: 0.575rem;
+      color: var(--muted-fg);
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    /* placed card on canvas */
+    .card.placed {
+      position: absolute;
+      max-width: 160px;
+      cursor: grab;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+    }
+
+    .card.placed:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+      border-color: hsl(0,0%,65%);
+      z-index: 10;
+    }
+
+    /* CANVAS WRAP */
+    .canvas-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* THE GRAPH */
+    .graph {
+      position: absolute;
+      inset: 2.5rem 2.75rem 2.75rem 3rem;
+    }
+
+    /* Axis lines drawn with pseudo/divs */
+    .axis-x {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: hsl(0,0%,78%);
+    }
+
+    .axis-y {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 1px;
+      background: hsl(0,0%,78%);
+    }
+
+    /* Arrow heads */
+    .axis-x::after, .axis-x::before,
+    .axis-y::after, .axis-y::before {
+      content: '';
+      position: absolute;
+      border: 4px solid transparent;
+    }
+
+    .axis-x::after {
+      right: -1px;
+      top: -4px;
+      border-left-color: hsl(0,0%,65%);
+      border-right: none;
+    }
+
+    .axis-y::before {
+      top: -1px;
+      left: -4px;
+      border-bottom-color: hsl(0,0%,65%);
+      border-top: none;
+    }
+
+    /* Grid lines (light) */
+    .grid-h {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      background: hsl(0,0%,92%);
+      pointer-events: none;
+    }
+
+    .grid-v {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      background: hsl(0,0%,92%);
+      pointer-events: none;
+    }
+
+    /* Axis labels */
+    .label-x-low {
+      position: absolute;
+      bottom: -2rem;
+      left: 0;
+      font-size: 0.7rem;
+      color: var(--muted-fg);
+    }
+
+    .label-x-high {
+      position: absolute;
+      bottom: -2rem;
+      right: 0;
+      font-size: 0.7rem;
+      color: var(--muted-fg);
+    }
+
+    .label-x-title {
+      position: absolute;
+      bottom: -2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--fg);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .label-y-low {
+      position: absolute;
+      left: -2.75rem;
+      bottom: 0;
+      font-size: 0.7rem;
+      color: var(--muted-fg);
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+
+    .label-y-high {
+      position: absolute;
+      left: -2.75rem;
+      top: 0;
+      font-size: 0.7rem;
+      color: var(--muted-fg);
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+
+    .label-y-title {
+      position: absolute;
+      left: -2.75rem;
+      top: 50%;
+      transform: translateY(-50%) rotate(180deg);
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--fg);
+      writing-mode: vertical-rl;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* Drop zone (the actual canvas area cards land on) */
+    .drop-zone {
+      position: absolute;
+      inset: 0;
+    }
+
+    .drop-zone.drag-over {
+      background: hsl(142,71%,98%);
+    }
+
+    /* DRAG GHOST */
+    #ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      display: none;
+      background: white;
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 0.4rem 0.6rem;
+      font-family: var(--font);
+      font-size: 0.75rem;
+      line-height: 1.4;
+      max-width: 165px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+      color: var(--fg);
+    }
+
+    /* SUMMARY PANEL */
+    .summary {
+      display: none;
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.875rem 1rem;
+      max-width: 260px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      font-size: 0.75rem;
+      z-index: 20;
+    }
+
+    .summary.visible { display: block; }
+
+    .summary-title {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--muted-fg);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.4rem;
+    }
+
+    .summary-item {
+      margin-bottom: 0.25rem;
+      line-height: 1.4;
+      color: var(--fg);
+    }
+
+    .summary-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.575rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: 99px;
+      margin-right: 0.3rem;
+      vertical-align: middle;
+    }
+
+    .tag-underserved { background: var(--primary-light); color: hsl(142,50%,28%); }
+    .tag-working     { background: hsl(210,100%,95%);   color: hsl(210,60%,30%); }
+    .tag-nice        { background: hsl(48,100%,93%);    color: hsl(48,60%,30%); }
+    .tag-low         { background: var(--muted);        color: var(--muted-fg); }
+
+    .summary-section { margin-bottom: 0.75rem; }
+    .summary-section:last-child { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+
+<div id="ghost"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <a href="https://databao.app" class="nav-logo" target="_blank">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+      </svg>
+      Databao
+    </a>
+    <span class="nav-title"><strong>What Does Marketing Actually Need?</strong> &nbsp;·&nbsp; A 20-minute exercise for data teams</span>
+  </div>
+  <div class="nav-right">
+    <span class="nav-hint">Drag cards onto the canvas based on what your stakeholder says</span>
+    <button class="btn-reset" id="btn-reset">Reset</button>
+  </div>
+</nav>
+
+<!-- TRAY -->
+<div class="tray" id="tray">
+  <span class="tray-label" id="tray-label">To place</span>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas-wrap" id="canvas-wrap">
+  <div class="graph">
+    <div class="drop-zone" id="drop-zone"></div>
+
+    <div class="axis-x"></div>
+    <div class="axis-y"></div>
+    <div class="grid-h"></div>
+    <div class="grid-v"></div>
+
+    <span class="label-x-low">Low</span>
+    <span class="label-x-title">Importance</span>
+    <span class="label-x-high">High</span>
+
+    <span class="label-y-low">Low</span>
+    <span class="label-y-title">Pain</span>
+    <span class="label-y-high">High</span>
+  </div>
+
+</div>
+
+<script>
+const CARDS = [
+  { id: 1,  text: "Check if a campaign is on track before it burns through budget" },
+  { id: 2,  text: "Understand what actually influenced a customer to convert — not just the last click" },
+  { id: 3,  text: "Have a performance summary ready before the Monday team meeting" },
+  { id: 4,  text: "Know which channel is driving the most conversions this week" },
+  { id: 5,  text: "Spot an underperforming campaign early enough to change course" },
+  { id: 6,  text: "Understand which customer segments respond best to a campaign" },
+  { id: 7,  text: "Answer a specific question from leadership the same day it's asked" },
+  { id: 8,  text: "See all channel performance in one place without jumping between platforms" },
+  { id: 9,  text: "Justify budget decisions to finance or leadership with confidence" },
+  { id: 10, text: "Understand the full customer journey from first touch to purchase" },
+];
+
+// placed[id] = { xPct, yPct } — percent within the drop-zone
+const placed = {};
+
+const trayEl    = document.getElementById('tray');
+const trayLabel = document.getElementById('tray-label');
+const dropZone  = document.getElementById('drop-zone');
+const ghost     = document.getElementById('ghost');
+const summaryEl = document.getElementById('summary');
+
+let drag = null;
+
+// ── Render ────────────────────────────────────────────────────────────────
+
+function render() {
+  // Tray
+  const trayCards = trayEl.querySelectorAll('.card');
+  trayCards.forEach(c => c.remove());
+  const unplaced = CARDS.filter(c => !placed[c.id]);
+  trayLabel.textContent = unplaced.length > 0 ? `To place (${unplaced.length})` : 'All placed ✓';
+  unplaced.forEach(c => trayEl.appendChild(makeCard(c, true)));
+
+  // Canvas
+  dropZone.querySelectorAll('.card').forEach(c => c.remove());
+  CARDS.filter(c => placed[c.id]).forEach(c => {
+    const el = makeCard(c, false);
+    el.classList.add('placed');
+    el.style.left = placed[c.id].xPct + '%';
+    el.style.top  = placed[c.id].yPct + '%';
+    dropZone.appendChild(el);
+  });
+
+}
+
+function renderSummary() {
+  const p = CARDS.filter(c => placed[c.id]);
+  if (p.length === 0) { summaryEl.classList.remove('visible'); return; }
+  summaryEl.classList.add('visible');
+
+  function quadrant(id) {
+    const { xPct, yPct } = placed[id];
+    const highX = xPct >= 50, highY = yPct < 50;
+    if (highX && highY)  return 'underserved';
+    if (!highX && highY) return 'nice';
+    if (highX && !highY) return 'working';
+    return 'low';
+  }
+
+  const groups = { underserved: [], nice: [], working: [], low: [] };
+  p.forEach(c => groups[quadrant(c.id)].push(c));
+
+  const labels = {
+    underserved: ['tag-underserved', 'Underserved'],
+    working:     ['tag-working',     'Working well'],
+    nice:        ['tag-nice',        'Nice to solve'],
+    low:         ['tag-low',         'Low priority'],
+  };
+
+  let html = '';
+  ['underserved','working','nice','low'].forEach(q => {
+    if (groups[q].length === 0) return;
+    const [cls, name] = labels[q];
+    html += `<div class="summary-section"><div class="summary-title">${name}</div>`;
+    groups[q].forEach(c => {
+      html += `<div class="summary-item"><span class="summary-tag ${cls}">#${c.id}</span>${c.text}</div>`;
+    });
+    html += `</div>`;
+  });
+
+  summaryEl.innerHTML = html;
+}
+
+// ── Card factory ──────────────────────────────────────────────────────────
+
+function makeCard(card, inTray) {
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.dataset.id = card.id;
+  el.innerHTML = `<span class="card-num">#${card.id}</span>${card.text}`;
+  el.addEventListener('pointerdown', e => startDrag(e, card, inTray));
+  return el;
+}
+
+// ── Drag ──────────────────────────────────────────────────────────────────
+
+function startDrag(e, card, fromTray) {
+  e.preventDefault();
+  const srcEl = e.currentTarget;
+  const rect = srcEl.getBoundingClientRect();
+
+  drag = {
+    card,
+    fromTray,
+    offsetX: e.clientX - rect.left,
+    offsetY: e.clientY - rect.top,
+    srcEl,
+  };
+
+  ghost.innerHTML = `<span style="font-family:var(--mono);font-size:0.575rem;color:var(--muted-fg);display:block;margin-bottom:0.2rem">#${card.id}</span>${card.text}`;
+  ghost.style.display = 'block';
+  positionGhost(e.clientX, e.clientY);
+  srcEl.style.opacity = '0.35';
+
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup', onUp);
+}
+
+function positionGhost(cx, cy) {
+  ghost.style.left = (cx - drag.offsetX) + 'px';
+  ghost.style.top  = (cy - drag.offsetY) + 'px';
+}
+
+function onMove(e) {
+  if (!drag) return;
+  positionGhost(e.clientX, e.clientY);
+
+  const overZone = isOverDropZone(e.clientX, e.clientY);
+  dropZone.classList.toggle('drag-over', overZone);
+}
+
+function onUp(e) {
+  if (!drag) return;
+  dropZone.classList.remove('drag-over');
+  ghost.style.display = 'none';
+  drag.srcEl.style.opacity = '';
+
+  if (isOverDropZone(e.clientX, e.clientY)) {
+    const dzRect = dropZone.getBoundingClientRect();
+    const rawX = e.clientX - drag.offsetX - dzRect.left;
+    const rawY = e.clientY - drag.offsetY - dzRect.top;
+    const cardW = 160, cardH = 72;
+    const clampX = Math.max(0, Math.min(rawX, dzRect.width  - cardW));
+    const clampY = Math.max(0, Math.min(rawY, dzRect.height - cardH));
+    placed[drag.card.id] = {
+      xPct: (clampX / dzRect.width)  * 100,
+      yPct: (clampY / dzRect.height) * 100,
+    };
+  } else {
+    delete placed[drag.card.id];
+  }
+
+  drag = null;
+  document.removeEventListener('pointermove', onMove);
+  document.removeEventListener('pointerup', onUp);
+  render();
+}
+
+function isOverDropZone(cx, cy) {
+  const r = dropZone.getBoundingClientRect();
+  return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  if (!confirm('Reset all cards?')) return;
+  Object.keys(placed).forEach(k => delete placed[k]);
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

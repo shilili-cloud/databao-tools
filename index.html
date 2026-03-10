@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Databao Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', Arial, sans-serif; background: #fff; color: hsl(0,0%,5%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; padding: 2rem; }
+    .logo { font-weight: 600; font-size: 1rem; color: hsl(0,0%,5%); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+    .logo svg { width: 18px; height: 18px; }
+    .cards { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .card { border: 1px solid hsl(0,0%,88%); border-radius: 8px; padding: 1.5rem; width: 260px; text-decoration: none; color: inherit; transition: box-shadow 0.15s, border-color 0.15s; }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: hsl(0,0%,70%); }
+    .card-tag { font-size: 0.7rem; font-weight: 600; color: hsl(142,50%,35%); background: hsl(142,71%,95%); padding: 0.2rem 0.5rem; border-radius: 99px; display: inline-block; margin-bottom: 0.75rem; }
+    .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .card-desc { font-size: 0.85rem; color: hsl(0,0%,42%); line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <a href="https://databao.app" class="logo" target="_blank">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+    Databao
+  </a>
+  <div class="cards">
+    <a href="/jtbd" class="card">
+      <span class="card-tag">Workshop</span>
+      <div class="card-title">What Does Marketing Actually Need?</div>
+      <div class="card-desc">A 20-minute exercise for data teams to discover what stakeholders actually need from their data.</div>
+    </a>
+    <a href="/calculator" class="card">
+      <span class="card-tag">Calculator</span>
+      <div class="card-title">Data Request Cost Calculator</div>
+      <div class="card-desc">See how much your team is spending on ad-hoc data requests that should be self-serve.</div>
+    </a>
+  </div>
+</body>
+</html>
